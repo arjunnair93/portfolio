@@ -131,7 +131,18 @@
             </div>
 
             <v-card-text class="card-content">
-              <v-list class="project-list" bg-color="transparent">
+              <!-- Loading state -->
+              <div v-if="isLoadingProjects" class="text-center py-8">
+                <v-progress-circular 
+                  color="primary" 
+                  indeterminate 
+                  size="48"
+                ></v-progress-circular>
+                <p class="mt-4 text-body-2">Loading projects...</p>
+              </div>
+
+              <!-- Projects list -->
+              <v-list v-else class="project-list" bg-color="transparent">
                 <v-list-item 
                   v-for="(project, index) in latestProjects" 
                   :key="project.id"
@@ -344,9 +355,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed } from 'vue'
+import { defineComponent, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import arjunImage from '@/assets/arjun.jpg'
+import { projectsApi, type Project as ApiProject } from '@/services/api'
 
 interface Project {
   id: number
@@ -382,32 +394,65 @@ export default defineComponent({
       color: 'success'
     })
 
-    const latestProjects: Project[] = [
-      {
-        id: 1,
-        title: 'Modern Portfolio',
-        description: 'Responsive portfolio with Vue.js, TypeScript and Material Design',
-        tech: ['Vue.js', 'TypeScript', 'Vuetify', 'Laravel'],
-        icon: 'mdi-web',
-        color: 'primary'
-      },
-      {
-        id: 2,
-        title: 'E-commerce Platform',
-        description: 'Full-stack commerce solution with payment integration',
-        tech: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-        icon: 'mdi-shopping',
-        color: 'secondary'
-      },
-      {
-        id: 3,
-        title: 'Task Management',
-        description: 'Collaborative workspace with real-time collaboration',
-        tech: ['Vue.js', 'Socket.io', 'PostgreSQL', 'Docker'],
-        icon: 'mdi-clipboard-check',
-        color: 'success'
+    // Reactive data for projects from API
+    const latestProjects = ref<Project[]>([])
+    const isLoadingProjects = ref(true)
+
+    // Function to transform API project to display format
+    const transformApiProject = (apiProject: ApiProject, index: number): Project => {
+      const icons = ['mdi-web', 'mdi-shopping', 'mdi-clipboard-check', 'mdi-code-tags', 'mdi-mobile']
+      const colors = ['primary', 'secondary', 'success', 'info', 'warning']
+      
+      return {
+        id: apiProject.id,
+        title: apiProject.title,
+        description: apiProject.description,
+        tech: apiProject.technologies ? apiProject.technologies.split(',').map(t => t.trim()) : [],
+        icon: icons[index % icons.length],
+        color: colors[index % colors.length]
       }
-    ]
+    }
+
+    // Fetch projects from API
+    const fetchProjects = async () => {
+      try {
+        isLoadingProjects.value = true
+        const response = await projectsApi.getAll()
+        latestProjects.value = response.data.slice(0, 3).map(transformApiProject)
+      } catch (error) {
+        console.error('Failed to fetch projects:', error)
+        showNotification('Failed to load projects', 'error')
+        // Fallback to static data if API fails
+        latestProjects.value = [
+          {
+            id: 1,
+            title: 'Modern Portfolio',
+            description: 'Responsive portfolio with Vue.js, TypeScript and Material Design',
+            tech: ['Vue.js', 'TypeScript', 'Vuetify', 'Laravel'],
+            icon: 'mdi-web',
+            color: 'primary'
+          },
+          {
+            id: 2,
+            title: 'E-commerce Platform',
+            description: 'Full-stack commerce solution with payment integration',
+            tech: ['React', 'Node.js', 'MongoDB', 'Stripe'],
+            icon: 'mdi-shopping',
+            color: 'secondary'
+          },
+          {
+            id: 3,
+            title: 'Task Management',
+            description: 'Collaborative workspace with real-time collaboration',
+            tech: ['Vue.js', 'Socket.io', 'PostgreSQL', 'Docker'],
+            icon: 'mdi-clipboard-check',
+            color: 'success'
+          }
+        ]
+      } finally {
+        isLoadingProjects.value = false
+      }
+    }
 
     const skills: Skill[] = [
       { name: 'Vue.js', icon: 'mdi-vuejs', color: 'green-darken-2', level: 92 },
@@ -473,6 +518,11 @@ export default defineComponent({
       showNotification(`${skill.name} - ${skill.level}% proficiency level`, 'info')
     }
 
+    // Fetch projects when component mounts
+    onMounted(() => {
+      fetchProjects()
+    })
+
     return {
       latestProjects,
       skills,
@@ -480,6 +530,7 @@ export default defineComponent({
       selectedSkills,
       snackbar,
       projectsRef,
+      isLoadingProjects,
       avatarClicked,
       scrollToProjects,
       downloadCV,
