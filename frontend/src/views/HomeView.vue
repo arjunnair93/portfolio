@@ -15,11 +15,12 @@
                 @click="avatarClicked"
               >
                 <v-img 
-                  src="/src/assets/arjun.jpg" 
+                  :src="'/arjun.jpg'"
                   alt="Profile picture of Arjun"
                   cover
-                  lazy-src="/src/assets/arjun.jpg"
+                  :lazy-src="profileImage"
                   class="profile-image"
+                  @error="$event.target.src = profileImage"
                 >
                   <template v-slot:placeholder>
                     <v-icon size="120" color="grey-lighten-3">mdi-account</v-icon>
@@ -345,8 +346,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import arjunImage from '@/assets/arjun.jpg'
 
 interface Project {
   id: number
@@ -487,7 +489,8 @@ export default defineComponent({
       showSkillDetails,
       getStatIcon,
       getStatColor,
-      getSnackbarIcon
+      getSnackbarIcon,
+      profileImage: arjunImage
     }
   }
 })
