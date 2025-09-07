@@ -417,14 +417,36 @@ export default defineComponent({
     const fetchProjects = async () => {
       try {
         isLoadingProjects.value = true
+        try {
+          // Try to load projects from API with timeout
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('API timeout')), 3000)
+          );
+          
+          const apiResponse = await Promise.race([
+            projectsApi.getAll(),
+            timeoutPromise
+          ]);
+          
+          if (apiResponse && (apiResponse as any).data && (apiResponse as any).data.length > 0) {
+            // Transform API response to match our format
+            latestProjects.value = (apiResponse as any).data.slice(0, 3).map((project: ApiProject) => ({
+              id: project.id,
+              title: project.title,
+              description: project.description,
+              tech: project.technologies ? project.technologies.split(',').map(t => t.trim()) : [],
+              icon: 'mdi-code-tags',
+              color: 'primary'
+            }));
+            console.log('✅ Projects loaded successfully from API');
+            return;
+          }
+        } catch (error: any) {
+          console.warn('⚠️ API call failed, using fallback data:', error?.message || 'Unknown error');
+        }
         
-        // For now, use fallback data while we fix backend connectivity
-        // TODO: Re-enable API call once backend is properly configured
-        // const response = await projectsApi.getAll()
-        // latestProjects.value = response.data.slice(0, 3).map(transformApiProject)
-        
-        // Simulate loading delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 800))
+        // Fallback to curated project data
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         // Use curated project data
         latestProjects.value = [

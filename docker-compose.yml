@@ -20,6 +20,7 @@ services:
       - /var/www/html/node_modules
     ports:
       - "8000:9000"
+      - "8080:8080"
     networks:
       - portfolio-network
 
@@ -47,6 +48,7 @@ services:
       - "80:80"
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
+      - ./backend/public:/var/www/html/public
     depends_on:
       - backend
       - frontend
