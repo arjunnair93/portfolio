@@ -15,12 +15,10 @@
                 @click="avatarClicked"
               >
                 <v-img 
-                  :src="'/arjun.jpg'"
+                  :src="profileImage"
                   alt="Profile picture of Arjun"
                   cover
-                  :lazy-src="profileImage"
                   class="profile-image"
-                  @error="$event.target.src = profileImage"
                 >
                   <template v-slot:placeholder>
                     <v-icon size="120" color="grey-lighten-3">mdi-account</v-icon>
