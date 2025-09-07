@@ -1,0 +1,31 @@
+/* Material Design baseline and Vuetify layout helpers */
+@import 'vuetify/styles';
+@import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+@import url('https://fonts.googleapis.com/css?family=Material+Icons');
+
+html, body, #app {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+	background: #f5f5f5;
+}
+
+/* Ensure Vuetify fills the viewport */
+#app {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Fix for buttons and interactive elements */
+.v-btn {
+	cursor: pointer;
+}
+
+/* Responsive helpers */
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 16px;
+}
